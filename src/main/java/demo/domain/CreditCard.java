@@ -1,7 +1,5 @@
 package demo.domain;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import demo.Application;
 import org.bson.Document;
 import org.springframework.data.annotation.Id;
 
@@ -73,6 +71,5 @@ public class CreditCard extends Document {
     }
 
     @Id
-    @JsonSerialize(using = Application.ObjectIdSerializer.class)
     private String id;
 }

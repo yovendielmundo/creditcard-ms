@@ -6,19 +6,15 @@ import demo.domain.CreditCardService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.hateoas.Link;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
 @RestController
 @RequestMapping(value = "/credit-cards", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -36,11 +32,7 @@ public class CreditCardController {
 
         final CreditCard savedCreditCard = service.saveNormalizedCreditCard(creditCard);
 
-        final Link link = getLink(savedCreditCard);
-
-        final URI location = URI.create(link.getHref());
-
-        return ResponseEntity.created(location).build();
+        return ResponseEntity.ok(savedCreditCard);
     }
 
     @RequestMapping(value = "/import", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -50,8 +42,8 @@ public class CreditCardController {
 
         final List<CreditCard> importedCreditCards = service.importNormalizedCreditCards(creditCards);
 
-        final List<Link> links = importedCreditCards.stream()
-                .map(this::getLink)
+        final List<String> links = importedCreditCards.stream()
+                .map(CreditCard::getId)
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(links);
@@ -89,12 +81,6 @@ public class CreditCardController {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     Map handleCreditCardNotFoundException(final CreditCardNotFoundException e) {
         return Collections.singletonMap("message", e.getMessage());
-    }
-
-    private Link getLink(final CreditCard creditCard) {
-        return linkTo(CreditCardController.class)
-                .slash(creditCard.getId())
-                .withSelfRel();
     }
 
     private void validate(final CreditCard creditCard) {

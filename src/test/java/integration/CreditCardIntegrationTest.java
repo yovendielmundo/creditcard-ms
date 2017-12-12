@@ -18,13 +18,11 @@ import org.springframework.boot.test.IntegrationTest;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.boot.test.TestRestTemplate;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.hateoas.Resource;
 import org.springframework.http.*;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.client.RestTemplate;
 
-import java.net.URI;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -54,9 +52,9 @@ public class CreditCardIntegrationTest {
 
     @Test
     public void shouldReturnOkWhenCreateCreditCard() {
-        final URI response = restTemplate.postForLocation(CREDIT_CARDS_URI, newTestCreditCard());
+        final CreditCard response = restTemplate.postForObject(CREDIT_CARDS_URI, newTestCreditCard(), CreditCard.class);
 
-        assertThat(response.getPath()).isNotEmpty();
+        assertThat(response).isNotEmpty();
     }
 
 
@@ -145,21 +143,6 @@ public class CreditCardIntegrationTest {
     }
 
     @Test
-    public void shouldReturnOkWithAllCreditCardsFilterByLocale() {
-        createCreditCardsFromJson();
-
-        final String locale = "ID";
-        final ResponseEntity<List<Resource<CreditCard>>> response = getListCreditCards("http://localhost:9000/hateoas/search?locale={locale}", locale);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        final List<Resource<CreditCard>> creditCards = response.getBody();
-
-        assertThat(creditCards)
-                .filteredOn(creditCard -> !creditCard.getContent().getString("language").equals(locale))
-                .hasSize(0);
-    }
-
-    @Test
     public void shouldReturnNotFoundCreditCard() {
         final String id = "fakeId";
         ResponseEntity response = restTemplate.getForEntity(CREDIT_CARDS_URI + "/{id}", Object.class, id);
@@ -204,18 +187,10 @@ public class CreditCardIntegrationTest {
         return restTemplate.exchange(uri, HttpMethod.GET, null, getPageTypeReference(), params);
     }
 
-    private ResponseEntity<List<Resource<CreditCard>>> getListCreditCards(String uri, Object... params) {
-        return restTemplate.exchange(uri, HttpMethod.GET, null, getListTypeReference(), params);
-    }
-
     private HttpHeaders getHttpHeaders() {
         final HttpHeaders headers = new HttpHeaders();
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
         return headers;
-    }
-
-    private ParameterizedTypeReference<List<Resource<CreditCard>>> getListTypeReference() {
-        return new ParameterizedTypeReference<List<Resource<CreditCard>>>() {};
     }
 
     private ParameterizedTypeReference<Page<CreditCard>> getPageTypeReference() {
@@ -257,7 +232,7 @@ public class CreditCardIntegrationTest {
         return objectMapper;
     }
 
-    private final RestTemplate restTemplate = new TestRestTemplate("demo", "123");
+    private final RestTemplate restTemplate = new TestRestTemplate("test", "123");
 
     private final ObjectMapper objectMapper = objectMapper();
 

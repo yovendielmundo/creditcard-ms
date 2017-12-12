@@ -20,6 +20,10 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class CreditCardControllerTest {
 
+    @Mock private CreditCardService service;
+
+    @InjectMocks private CreditCardController controller;
+
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionWhenCreateACreditCardEmpty() {
         controller.createCreditCard(new CreditCard());
@@ -94,8 +98,4 @@ public class CreditCardControllerTest {
         return new CreditCard("name", "Luis");
     }
 
-
-    @Mock private CreditCardService service;
-
-    @InjectMocks private CreditCardController controller;
 }
